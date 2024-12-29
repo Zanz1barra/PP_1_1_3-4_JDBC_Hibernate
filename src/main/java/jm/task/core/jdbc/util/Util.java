@@ -26,6 +26,6 @@ public class Util {
     }
 
     public static Connection getMySQLConnection() throws SQLException {
-        return getMySQLConnection(defaultHostName, defaultDbName, defaultUserName, defaultPassword);
+        return getMySQLConnection(DEFAULT_HOST_NAME, DEFAULT_DB_NAME, DEFAULT_USER_NAME, DEFAULT_PASSWORD);
     }
 }

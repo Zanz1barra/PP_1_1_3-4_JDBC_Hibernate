@@ -6,12 +6,12 @@ import jm.task.core.jdbc.model.User;
 import java.sql.SQLException;
 import java.util.List;
 
-public class UserServiceImpl implements UserService {
-    UserDaoJDBCImpl daoJDBC;
+public class UserServiceJDBCImpl implements UserService {
+    UserDaoJDBCImpl dao;
 
-    public UserServiceImpl() {
+    public UserServiceJDBCImpl() {
         try {
-            daoJDBC = new UserDaoJDBCImpl();
+            dao = new UserDaoJDBCImpl();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -19,7 +19,7 @@ public class UserServiceImpl implements UserService {
 
     public void createUsersTable() {
         try {
-            daoJDBC.createUsersTable();
+            dao.createUsersTable();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserService {
 
     public void dropUsersTable() {
         try {
-            daoJDBC.dropUsersTable();
+            dao.dropUsersTable();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
 
     public void saveUser(String name, String lastName, byte age) {
         try {
-            daoJDBC.saveUser(name, lastName, age);
+            dao.saveUser(name, lastName, age);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
 
     public void removeUserById(long id) {
         try {
-            daoJDBC.removeUserById(id);
+            dao.removeUserById(id);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
 
     public List<User> getAllUsers() {
         try {
-            return daoJDBC.getAllUsers();
+            return dao.getAllUsers();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
 
     public void cleanUsersTable() {
         try {
-            daoJDBC.cleanUsersTable();
+            dao.cleanUsersTable();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
