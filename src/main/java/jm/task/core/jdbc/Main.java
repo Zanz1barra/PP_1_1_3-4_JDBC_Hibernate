@@ -2,13 +2,13 @@ package jm.task.core.jdbc;
 
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.service.UserService;
-import jm.task.core.jdbc.service.UserServiceJDBCImpl;
+import jm.task.core.jdbc.service.UserServiceHibernateImpl;
 
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        UserService table = new UserServiceJDBCImpl();
+        UserService table = new UserServiceHibernateImpl();
         User[] users = {
                 new User("Феликс", "Дзержинский", (byte) 41),
                 new User("Владимир", "Ульянов", (byte) 48),
