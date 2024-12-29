@@ -7,19 +7,22 @@ import java.util.TimeZone;
 
 
 public class Util {
-    public static String defaultHostName = "127.0.0.1";
-    public static String defaultDbName = "mysql";
-    public static String defaultUserName = "root";
-    public static String defaultPassword = "root";
+    public static final String DEFAULT_HOST_NAME = "127.0.0.1";
+    public static final String DEFAULT_DB_NAME = "mysql";
+    public static final String DEFAULT_USER_NAME = "root";
+    public static final String DEFAULT_PASSWORD = "root";
 
-    public static String userTableName = "UserData";
+    public static final String USER_TABLE_NAME = "UserData";
+
+    private static String getConnectionURL(String hostName, String dbName) {
+        return "jdbc:mysql://" + hostName + ":3306/" + dbName;
+    }
 
     // Connect to MySQL
     public static Connection getMySQLConnection(String hostName, String dbName,
                                                 String userName, String password) throws SQLException {
-        String connectionURL = "jdbc:mysql://" + hostName + ":3306/" + dbName;
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-        return DriverManager.getConnection(connectionURL, userName, password);
+        return DriverManager.getConnection(getConnectionURL(hostName, dbName), userName, password);
     }
 
     public static Connection getMySQLConnection() throws SQLException {
