@@ -4,77 +4,81 @@ import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoJDBCImpl implements UserDao {
-    Connection conn;
+    private final Connection sqlConnection;
 
-    public UserDaoJDBCImpl() throws SQLException {
-        this.conn = Util.getMySQLConnection();
-    }
-
-    public void createUsersTable() throws SQLException {
-        ResultSet resultSet = conn.getMetaData()
-                .getTables(null, null, Util.USER_TABLE_NAME, null);
-        if (!resultSet.next()) {
-            String usersTable = "CREATE TABLE " + Util.USER_TABLE_NAME + " ("
-                    + "id INT NOT NULL AUTO_INCREMENT,"
-                    + "name VARCHAR(45) NOT NULL,"
-                    + "lastName VARCHAR(45) NOT NULL,"
-                    + "age INT NOT NULL,"
-                    + "PRIMARY KEY (id))"
-                    + "ENGINE = InnoDB AUTO_INCREMENT = 1";
-            conn.createStatement()
-                    .executeUpdate(usersTable);
-        }else {
-            System.out.println("Таблица уже существует");
+    public UserDaoJDBCImpl() {
+        try {
+            this.sqlConnection = Util.getMySQLConnection();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public void dropUsersTable() throws SQLException {
-        ResultSet resultSet = conn.getMetaData()
-                .getTables(null, null, Util.USER_TABLE_NAME, null);
-        if (resultSet.next()) {
-            String query = "DROP TABLE " + Util.USER_TABLE_NAME;
-            conn.createStatement()
-                    .executeUpdate(query);
-        } else {
-            System.out.println("Таблица уже удалена");
-        }
+    public void createUsersTable() {
+        String createUsersTableCommand = "CREATE TABLE IF NOT EXISTS " + Util.USER_TABLE_NAME + " ("
+                + "id INT NOT NULL AUTO_INCREMENT,"
+                + "name VARCHAR(45) NOT NULL,"
+                + "lastName VARCHAR(45) NOT NULL,"
+                + "age INT NOT NULL,"
+                + "PRIMARY KEY (id))"
+                + "ENGINE = InnoDB AUTO_INCREMENT = 1";
+        executeUpdateSQLCommand(createUsersTableCommand);
+    }
+
+    public void dropUsersTable() {
+        String dropUsersTableCommand = "DROP TABLE IF EXISTS " + Util.USER_TABLE_NAME;
+        executeUpdateSQLCommand(dropUsersTableCommand);
     }
 
 
-    public void saveUser(String name, String lastName, byte age) throws SQLException {
-        conn.createStatement()
-                .executeUpdate("INSERT INTO " + Util.USER_TABLE_NAME + "(name, lastName, age) " +
-                        "VALUES (" + "'" + name + "'" + ", " + "'" + lastName + "'" + ", " + age + ")");
-        System.out.println("User с именем - " + name + " " + lastName + " " + "добавлен в базу данных.");
+    public void saveUser(String name, String lastName, byte age) {
+        String saveUserCommand = "INSERT INTO " + Util.USER_TABLE_NAME + " (name, lastName, age) VALUES (?, ?, ?)";
+        executeUpdateSQLCommand(saveUserCommand, name, lastName, age);
     }
 
-    public void removeUserById(long id) throws SQLException {
-        conn.createStatement()
-                .executeUpdate("DELETE FROM " + Util.USER_TABLE_NAME + " WHERE ID = " + id);
+    public void removeUserById(long id) {
+        String removeUserCommand = "DELETE FROM " + Util.USER_TABLE_NAME + " WHERE ID = ?";
+        executeUpdateSQLCommand(removeUserCommand, id);
     }
 
-    public List<User> getAllUsers() throws SQLException {
-        ResultSet resultSet = conn.createStatement()
-                .executeQuery("SELECT id, name, lastName, age FROM " + Util.USER_TABLE_NAME);
+    public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
-        while (resultSet.next()){
-            User user = new User(resultSet.getString(2),
-                    resultSet.getString(3),
-                    resultSet.getByte(4));
-            user.setId(resultSet.getLong(1));
-            list.add(user);
+        String getAllUsersCommand = "SELECT id, name, lastName, age FROM " + Util.USER_TABLE_NAME;
+        try (PreparedStatement statement = sqlConnection.prepareStatement(getAllUsersCommand)) {
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                User user = new User(resultSet.getString(2),
+                        resultSet.getString(3),
+                        resultSet.getByte(4));
+                user.setId(resultSet.getLong(1));
+                list.add(user);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         return list;
     }
 
-    public void cleanUsersTable() throws SQLException {
-        conn.createStatement()
-                .executeUpdate("DELETE FROM " + Util.USER_TABLE_NAME);
+    public void cleanUsersTable() {
+        String cleanUsersCommand = "DELETE FROM " + Util.USER_TABLE_NAME;
+        executeUpdateSQLCommand(cleanUsersCommand);
+    }
+
+    private void executeUpdateSQLCommand(String command, Object... args) {
+        try (PreparedStatement statement = sqlConnection.prepareStatement(command)) {
+            for (int i = 0; i < args.length; i++) {
+                statement.setObject(i+1, args[i]);
+            }
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
