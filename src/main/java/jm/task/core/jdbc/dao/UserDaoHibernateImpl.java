@@ -15,6 +15,10 @@ public class UserDaoHibernateImpl implements UserDao {
         session = Util.getSessionFactory().openSession();
     }
 
+    // TODO работай с объектом sessionFactory на уровне класса, получив его из класса Util,
+    //  в каждом методе DAO создавай объект session с помощью конструкции try with resources,
+    //  управляй транзакцией в случае исключений,
+    //  продумывай логику по откату транзакций в блоке catch;
     private void executeSqlCommand(String sqlCommand) {
         Transaction transaction = session.beginTransaction();
         session.createSQLQuery(sqlCommand).addEntity(User.class).executeUpdate();
@@ -41,7 +45,6 @@ public class UserDaoHibernateImpl implements UserDao {
         Transaction transaction = session.beginTransaction();
         session.save(user);
         transaction.commit();
-        System.out.println("User с именем - " + user.getName() + " " + user.getLastName() + " добавлен в базу данных.");
     }
 
     @Override

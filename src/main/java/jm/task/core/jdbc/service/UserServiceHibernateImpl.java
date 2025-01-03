@@ -1,12 +1,18 @@
 package jm.task.core.jdbc.service;
 
+import jm.task.core.jdbc.dao.UserDao;
 import jm.task.core.jdbc.dao.UserDaoHibernateImpl;
 import jm.task.core.jdbc.model.User;
 
 import java.util.List;
 
+// TODO логи перенеси в слой сервиса, только необходимые по ТЗ, остальные удали
 public class UserServiceHibernateImpl implements UserService {
-    UserDaoHibernateImpl dao;
+    // НЕ правильно, работай на уровне абстракции, а не реализации,
+    // объявляй объект по типу интерфейса, например UserDao userDao =
+    // затем присваивай реализацию, добавь модификатор доступа,
+    // изучи полиморфизм и слабую связанность
+    private UserDao dao;
 
     public UserServiceHibernateImpl() {
         dao = new UserDaoHibernateImpl();
