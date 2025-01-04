@@ -1,28 +1,27 @@
 package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
+import jm.task.core.jdbc.util.CloseableTransaction;
 import jm.task.core.jdbc.util.Util;
 
 import org.hibernate.Session;
-import org.hibernate.Transaction;
+import org.hibernate.SessionFactory;
 
 import java.util.List;
 
 public class UserDaoHibernateImpl implements UserDao {
-    Session session;
+    private final SessionFactory sessionFactory;
 
     public UserDaoHibernateImpl() {
-        session = Util.getSessionFactory().openSession();
+        sessionFactory = Util.getSessionFactory();
     }
 
-    // TODO работай с объектом sessionFactory на уровне класса, получив его из класса Util,
-    //  в каждом методе DAO создавай объект session с помощью конструкции try with resources,
-    //  управляй транзакцией в случае исключений,
-    //  продумывай логику по откату транзакций в блоке catch;
     private void executeSqlCommand(String sqlCommand) {
-        Transaction transaction = session.beginTransaction();
-        session.createSQLQuery(sqlCommand).addEntity(User.class).executeUpdate();
-        transaction.commit();
+        try (Session session = sessionFactory.openSession();
+             CloseableTransaction transaction = new CloseableTransaction(session)) {
+            session.createSQLQuery(sqlCommand).addEntity(User.class).executeUpdate();
+            transaction.commit();
+        }
     }
 
     @Override
@@ -42,9 +41,11 @@ public class UserDaoHibernateImpl implements UserDao {
     }
 
     public void saveUser(User user) {
-        Transaction transaction = session.beginTransaction();
-        session.save(user);
-        transaction.commit();
+        try (Session session = sessionFactory.openSession();
+             CloseableTransaction transaction = new CloseableTransaction(session)) {
+            session.save(user);
+            transaction.commit();
+        }
     }
 
     @Override
@@ -54,14 +55,17 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void removeUserById(long id) {
-        User user;
-        user = session.load(User.class, id);
-        session.delete(user);
+        try (Session session = sessionFactory.openSession()) {
+            User user = session.load(User.class, id);
+            session.delete(user);
+        }
     }
 
     @Override
     public List<User> getAllUsers() {
-        return (List<User>)  session.createQuery("From " + User.class.getName()).list();
+        try (Session session = sessionFactory.openSession()) {
+            return (List<User>) session.createQuery("From " + User.class.getName()).list();
+        }
     }
 
     @Override
