@@ -1,11 +1,11 @@
 package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
-import jm.task.core.jdbc.util.CloseableTransaction;
 import jm.task.core.jdbc.util.Util;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 
 import java.util.List;
 
@@ -17,10 +17,16 @@ public class UserDaoHibernateImpl implements UserDao {
     }
 
     private void executeSqlCommand(String sqlCommand) {
-        try (Session session = sessionFactory.openSession();
-             CloseableTransaction transaction = new CloseableTransaction(session)) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
             session.createSQLQuery(sqlCommand).addEntity(User.class).executeUpdate();
             transaction.commit();
+        } catch (RuntimeException e) {
+            if ((transaction != null) && (transaction.getStatus().canRollback())) {
+                transaction.rollback();
+            }
+            throw e;
         }
     }
 
@@ -41,10 +47,15 @@ public class UserDaoHibernateImpl implements UserDao {
     }
 
     public void saveUser(User user) {
-        try (Session session = sessionFactory.openSession();
-             CloseableTransaction transaction = new CloseableTransaction(session)) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
             session.save(user);
             transaction.commit();
+        } catch (RuntimeException e) {
+            if ((transaction != null) && (transaction.getStatus().canRollback())) {
+                transaction.rollback();
+            }
         }
     }
 
