@@ -22,7 +22,7 @@ public class Main {
         }
         List<User> tableAllUsers = table.getAllUsers();
         for (User user: tableAllUsers) {
-            System.out.println(user.toString());
+            System.out.println(user);
         }
         table.cleanUsersTable();
         table.dropUsersTable();
